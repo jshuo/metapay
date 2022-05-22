@@ -5,6 +5,7 @@
   "keywords": [],
   "main": "src/index.js",
   "dependencies": {
+    "@fioprotocol/fiosdk": "https://github.com/jshuo/fiosdk_typescript.git#secux-fio",
     "@secux/app-eth": "2.1.6",
     "@secux/protocol-device": "^2.1.1",
     "@secux/protocol-transaction": "^2.1.3",
@@ -14,6 +15,7 @@
     "@secux/utility": "^3.0.4",
     "eth-balance-checker": "0.1.2",
     "eth-provider": "0.10.0",
+    "node-fetch": "3.2.3",
     "react": "17.0.2",
     "react-bootstrap": "2.2.2",
     "react-dom": "17.0.2",
