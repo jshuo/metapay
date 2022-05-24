@@ -5,7 +5,6 @@ import { Button, Modal, Form, Alert } from 'react-bootstrap'
 import AddForm from './AddForm'
 import * as crypto from 'crypto'
 const bs58 = require('bs58')
-// import { EllipticCurve } from '@secux/transport/lib/ITransaction';
 import { SecuxWebUSB } from '@secux/transport-webusb'
 const { SecuxETH } = require('@secux/app-eth')
 import Web3 from 'web3'
@@ -19,8 +18,11 @@ const generateTestingFioDomain = () => {
 const payerfioAddress = 'jshuo@fiotestnet'
 const payeefioAddress = 'secux@fiotestnet'
 
-let privateKey = '5KDEgao6gCx8KvCgJVn5Nm6W4X9EkS8Uap4QydX2yezZrvkT9E6',
-  publicKey = 'FIO5QvSU16Z6h57WhfqBJ1z1TrLUvUW5etmeHygfGhDFz6mQiJdcE'
+let privateKey = '5JHy4Q5P1FvqTsfRBzbHVTFE83LepHvmQyjRt1AW677tazuZ4ne',
+  publicKey = 'FIO6QhxLWAVaydsgbGWYaS9rcVBMytHK34jDkTWdboSspCKMaYDmB'
+
+// let privateKey = '',
+//   publicKey = ''
 
 const fetchJson = async (uri, opts = {}) => {
   return fetch(uri, opts)
@@ -28,13 +30,16 @@ const fetchJson = async (uri, opts = {}) => {
 
 function App() {
   const [show, setShow] = useState(false)
-
+  const [display, setDisplay] = useState(false)
+  const [fioAddress, setFioAddress] = useState("")
+  const [transactionId, setTransactionId] = useState("")  
   const handleClose = () => setShow(false)
   const handleShow = () => setShow(true)
   const ETH_ACCOUNT_PATH: string = `m/44'/60'/0'`
   const FIO_ACCOUNT_PATH: string = `m/44'/235'/0'/0/0`
   const SECUX_ETH_ACCOUNT_PATH = ETH_ACCOUNT_PATH + '/0/0'
   const INFURA_ID = 'e9f62e559d264acca5fe498412c1d9b9'
+  let FIOPubkeyAddress = ''
 
   const connectWebUSB = async () => {
     let transport = await SecuxWebUSB.Create(
@@ -46,30 +51,41 @@ function App() {
       }
     )
     await transport.Connect()
-
     const FIO_PUBLIC_PREFIX = 'FIO'
+    FIOSDK.Transport = transport
+
     let pubBuf = await transport.getPublickey(FIO_ACCOUNT_PATH, 0)
     console.log(pubBuf.toString('hex'))
-    const fio_address = await FIOSDK.getPublicKey(transport, FIO_ACCOUNT_PATH)
+    // const fio_address = await FIOSDK.getPublicKey(transport, FIO_ACCOUNT_PATH)
     let checksum = crypto.createHash('rmd160').update(pubBuf).digest('hex').slice(0, 8)
     pubBuf = Buffer.concat([pubBuf, Buffer.from(checksum, 'hex')])
-    const FIOPubkeyAddress = FIO_PUBLIC_PREFIX.concat(bs58.encode(pubBuf))
-    const fioSdk = new FIOSDK(privateKey, publicKey, 'http://testnet.fioprotocol.io/v1/', fetchJson, transport, '')
-    // const defaultFee = 800 * fioSdk.FIOSDK.SUFUnit
+    FIOPubkeyAddress = FIO_PUBLIC_PREFIX.concat(bs58.encode(pubBuf))
+    setFioAddress(FIOPubkeyAddress)
+    setDisplay(true)
+    const fioSdk = new FIOSDK(privateKey, publicKey, 'https://testnet.fioprotocol.io/v1/', fetchJson, transport, '')
     // const FIOAddress = await fio.genericAction('getFioAddresses', {fioPublicKey: pk.toString('hex')})
     const FIOAddress = await fioSdk.getFioAddresses(FIOPubkeyAddress)
-    const { public_address: payeePublicKey } = await fioSdk.getPublicAddress(payeefioAddress, "FIO", "FIO")
+    const { public_address: payeePublicKey } = await fioSdk.getPublicAddress(payeefioAddress, 'FIO', 'FIO')
     console.log(FIOAddress.fio_addresses[0].fio_address)
     const { fee } = await fioSdk.getFee('transfer_tokens_pub_key')
     const transferAmount = 168000000 // 1 FIO
+    try {
+      const result = await fioSdk.pushTransaction('fio.token', 'trnsfiopubky', {
+        payee_public_key: payeePublicKey,
+        amount: transferAmount,
+        max_fee: fee,
+        tpid: payerfioAddress
+      })
+      console.log(result.transaction_id)
+      setTransactionId(result.transaction_id)
+    } catch (error) {
+      setTransactionId('Non Canonical Signature! Try again')
+      // expected output: ReferenceError: nonExistentFunction is not defined
+      // Note - error messages will vary depending on browser
+    }
 
-    const result = await fioSdk.pushTransaction('fio.token', 'trnsfiopubky', {
-      payee_public_key: payeePublicKey,
-      amount: transferAmount,
-      max_fee: fee,
-      tpid: payerfioAddress
-    })
-    console.log(result)
+
+
     const address = await SecuxETH.getAddress(transport, SECUX_ETH_ACCOUNT_PATH)
     // const web3 = new Web3(provider("infura", { infuraId: INFURA_ID }));
     const web3 = new Web3(provider(`wss://rinkeby.infura.io/ws/v3/${INFURA_ID}`))
@@ -83,7 +99,7 @@ function App() {
       balance = web3.utils.fromWei(result, 'ether')
       console.log(balance + ' ETH')
       if (balance > 0.001) {
-        handleShow()
+        // handleShow()
       }
     })
   }
@@ -122,10 +138,11 @@ function App() {
           </tr>
         </tbody>
       </table>
-
+      <p>From Address: {fioAddress} </p>
+      <p>Transaction ID: {transactionId}</p>
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
-          <Modal.Title>Coin with sufficient funds</Modal.Title>
+          <Modal.Title>{fioAddress}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <AddForm />
