@@ -18,8 +18,7 @@ const generateTestingFioDomain = () => {
 const payerfioAddress = 'jshuo@fiotestnet'
 const payeefioAddress = 'secux@fiotestnet'
 
-let privateKey = '5JHy4Q5P1FvqTsfRBzbHVTFE83LepHvmQyjRt1AW677tazuZ4ne',
-  publicKey = 'FIO6QhxLWAVaydsgbGWYaS9rcVBMytHK34jDkTWdboSspCKMaYDmB'
+let privateKey = ''
 
 // let privateKey = '',
 //   publicKey = ''
@@ -62,7 +61,7 @@ function App() {
     FIOPubkeyAddress = FIO_PUBLIC_PREFIX.concat(bs58.encode(pubBuf))
     setFioAddress(FIOPubkeyAddress)
     setDisplay(true)
-    const fioSdk = new FIOSDK(privateKey, publicKey, 'https://testnet.fioprotocol.io/v1/', fetchJson, transport, '')
+    const fioSdk = new FIOSDK('', FIOPubkeyAddress, 'https://testnet.fioprotocol.io/v1/', fetchJson, transport, '')
     // const FIOAddress = await fio.genericAction('getFioAddresses', {fioPublicKey: pk.toString('hex')})
     const FIOAddress = await fioSdk.getFioAddresses(FIOPubkeyAddress)
     const { public_address: payeePublicKey } = await fioSdk.getPublicAddress(payeefioAddress, 'FIO', 'FIO')
