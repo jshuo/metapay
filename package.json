@@ -5,7 +5,7 @@
   "keywords": [],
   "main": "src/index.js",
   "dependencies": {
-    "@fioprotocol/fiosdk": "https://github.com/jshuo/fiosdk_typescript.git#2a02ab5557a5ea65c4a610cb9e2fb93b60ae1094",
+    "@fioprotocol/fiosdk": "https://github.com/jshuo/fiosdk_typescript.git#a75cb70dabe756a6aa6546e22d00604229726664",
     "@secux/app-eth": "2.1.6",
     "@secux/protocol-device": "^2.1.1",
     "@secux/protocol-transaction": "^2.1.3",
