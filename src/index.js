@@ -31,6 +31,7 @@ function App() {
   const [show, setShow] = useState(false)
   const [display, setDisplay] = useState(false)
   const [fioAddress, setFioAddress] = useState("")
+  const [fioBalance, setFioBalance] = useState()
   const [transactionId, setTransactionId] = useState("")  
   const handleClose = () => setShow(false)
   const handleShow = () => setShow(true)
@@ -63,7 +64,10 @@ function App() {
     setDisplay(true)
     const fioSdk = new FIOSDK('', FIOPubkeyAddress, 'https://testnet.fioprotocol.io/v1/', fetchJson, transport, '')
     // const FIOAddress = await fio.genericAction('getFioAddresses', {fioPublicKey: pk.toString('hex')})
+    const FIOBalance = await fioSdk.getFioBalance(FIOPubkeyAddress)
+    setFioBalance(FIOBalance.balance/1e9)
     const FIOAddress = await fioSdk.getFioAddresses(FIOPubkeyAddress)
+
     const { public_address: payeePublicKey } = await fioSdk.getPublicAddress(payeefioAddress, 'FIO', 'FIO')
     console.log(FIOAddress.fio_addresses[0].fio_address)
     const { fee } = await fioSdk.getFee('transfer_tokens_pub_key')
@@ -138,6 +142,7 @@ function App() {
         </tbody>
       </table>
       <p>From Address: {fioAddress} </p>
+      <p>FIO Balance: {fioBalance} </p>
       <p>Transaction ID: {transactionId}</p>
       <Modal show={show} onHide={handleClose}>
         <Modal.Header closeButton>
